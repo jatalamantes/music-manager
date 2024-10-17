@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\music-manager-start.Data\music-manager-start.Data.csproj" />
     <ProjectReference Include="..\Shared\music-manager-starter.Shared.csproj" />
   </ItemGroup>
 	<Target Name="CheckForNpm" BeforeTargets="NpmInstall">

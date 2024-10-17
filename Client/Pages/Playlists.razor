@@ -1,4 +1,5 @@
 ﻿@page "/playlists"
+@using music_manager_starter.Data.Models
 @using music_manager_starter.Shared
 
 @inject HttpClient Http
@@ -6,10 +7,60 @@
 <div class="p-0 min-h-screen bg-pattern flex flex-col items-center justify-center">
     <h2 class="text-3xl font-bold text-white mb-8 text-center">Your Playlists</h2>
 
+    <div class="mb-4">
+        <input @bind="newPlaylistName" placeholder="New Playlist Name" class="p-2 rounded" />
+        <button @onclick="CreatePlaylist" class="bg-purple-600 text-white px-4 py-2 rounded">Create Playlist</button>
+    </div>
+
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-        <div class="col-span-1 text-center text-gray-400">No playlists available. Create one!</div>
+        @if (playlists != null && playlists.Count > 0)
+        {
+            @foreach (var playlist in playlists)
+            {
+                <div class="col-span-1 text-center text-white">
+                    <h3 class="text-lg font-semibold">@playlist.Name</h3>
+                    <button @onclick="@(() => DeletePlaylist(playlist.Id))" class="bg-red-600 text-white px-2 py-1 rounded">Delete</button>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-span-1 text-center text-gray-400">No playlists available. Create one!</div>
+        }
     </div>
 </div>
+
+@code {
+    private List<Playlist> playlists = new List<Playlist>();
+    private string newPlaylistName;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPlaylists();
+    }
+
+    private async Task LoadPlaylists()
+    {
+        playlists = await Http.GetFromJsonAsync<List<Playlist>>("api/playlists");
+    }
+
+    private async Task CreatePlaylist()
+    {
+        if (!string.IsNullOrWhiteSpace(newPlaylistName))
+        {
+            var newPlaylist = new Playlist { Name = newPlaylistName };
+            await Http.PostAsJsonAsync("api/playlists", newPlaylist);
+            newPlaylistName = string.Empty;
+            await LoadPlaylists();
+        }
+    }
+
+    private async Task DeletePlaylist(Guid id)
+    {
+        await Http.DeleteAsync($"api/playlists/{id}");
+        await LoadPlaylists();
+    }
+}
 
 <style>
     .bg-pattern {
